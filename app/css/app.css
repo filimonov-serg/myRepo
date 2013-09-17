@@ -1,3 +1,18 @@
+.day-line {
+  stroke: #666;
+}
+.day-line-sel {
+  stroke: #600;
+}
+.day-mid-line {
+  stroke: #ccc;
+  stroke-dasharray: 3 2;
+}
+.bg-content {
+  fill: #fff;
+  stroke: #ccc;
+}
+
 html, body {
   height: 100%;
 }
