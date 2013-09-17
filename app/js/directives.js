@@ -37,7 +37,7 @@ angular.module('myApp.directives', []).
 					.domain([0, 700])
 					.range([0, width]);
 				var yScale = d3.scale.linear()
-					.domain([0, 30*24])
+					.domain([0, 60*24])
 					.range([0, height-30]);					
 				
 				for(var i=0;i<=6;i++) {
@@ -67,35 +67,7 @@ angular.module('myApp.directives', []).
 						.attr('class', 'day-text')
 						.text(i+1);
 
-					svg.append('rect')
-					.attr('x', xScale(i*100))
-					.attr('y', 30)
-					.attr('width', xScale(100))
-					.attr('height', yScale(30*24))
-					.attr('class', 'bg-content')
-					.on('mouseout', function() {
-						var selHour = svg.select('#sel-hour')[0];
-						if(selHour[0] != null) {
-							svg.select('#sel-hour').remove();
-						}
-					})
-					.on('mousemove', function() {
-						var mousePos = d3.mouse(this);
-						var selHour = svg.select('#sel-hour')[0];
-						if(selHour[0] === null) {
-							svg.append('line')
-								.attr('x1', 0)
-								.attr('x2', xScale(700))
-								.attr('y1', mousePos[1])
-								.attr('y2', mousePos[1])
-								.attr('class', 'day-line-sel')
-								.attr('id','sel-hour');
-						} else {
-							//console.log(selHour[0]);
-							d3.select(selHour[0]).attr('y1', mousePos[1]).attr('y2', mousePos[1]);
-						}
-
-					});
+					
 				}
 
 				//render time
@@ -107,15 +79,63 @@ angular.module('myApp.directives', []).
 					hourBox.append('line')
 						.attr('x1', 0)
 						.attr('x2', xScale(700))
-						.attr('y1', yScale(i*30)+30)
-						.attr('y2', yScale(i*30)+30)
+						.attr('y1', yScale(i*60)+30)
+						.attr('y2', yScale(i*60)+30)
 						.attr('class', 'day-line');
 					hourBox.append('line')
 						.attr('x1', 0)
 						.attr('x2', xScale(700))
-						.attr('y1', yScale(i*30+15)+30)
-						.attr('y2', yScale(i*30+15)+30)
+						.attr('y1', yScale(i*60+30)+30)
+						.attr('y2', yScale(i*60+30)+30)
 						.attr('class', 'day-mid-line');
+				}
+
+				var isMouseDown = false;
+				var lastY = 0;
+				var phaseData = [0];
+				
+				for(var i=0;i<=6;i++) {
+					var dayBox = svg.append('rect')
+						.attr('x', xScale(i*100))
+						.attr('y', 30)
+						.attr('width', xScale(100))
+						.attr('height', yScale(60*24))
+						.attr('class', 'bg-content')
+						.on('mousedown', function() {
+							d3.event.stopPropagation();
+							isMouseDown = true;
+							var mousePos = d3.mouse(this);
+							lastY = mousePos[1];
+							var phases = svg.selectAll("rect.phase")
+								.data(phaseData)
+								.enter()
+								.append("rect");
+							phases
+								.attr('x', 0)
+								.attr('y', mousePos[1])
+								.attr('width', xScale(90))
+								.attr('height', function(d) { return d; })
+								.attr('class', 'phase');
+
+						})
+						.on('mousemove', function(e) {
+							if(isMouseDown) {
+								var mousePos = d3.mouse(this);
+								phaseData[0] = mousePos[1]-lastY;
+								
+								var phases = svg.select("rect.phase")
+									.data(phaseData);
+								phases.enter()
+									.append('rect')
+									.attr('x', 0)
+									.attr('y', mousePos[1])
+									.attr('width', xScale(90))
+									.attr('height', mousePos[1]-lastY)
+									.attr('class', 'phase');
+
+								console.log(svg.selectAll("rect.phase"));
+							}
+						});
 				}
 			}
 		}
